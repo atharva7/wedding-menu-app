@@ -202,8 +202,7 @@ function buildSummaryHtml({
 <body>
   <header>
     <p class="brand">Taste the Rhythm</p>
-    <h1>Wedding Menu Selection</h1>
-    ${guestName ? `<p class="meta"><strong>${escapeHtml(guestName)}</strong></p>` : ""}
+    <h1>${guestName ? `${escapeHtml(guestName)}'s Celebration` : "Wedding Menu Selection"}</h1>
     <p class="meta">Package: <strong>${escapeHtml(tierInfo.name)}</strong> &middot; ${escapeHtml(tierInfo.subtitle)}</p>
     <p class="meta">${today}</p>
     <span class="total-badge">${totalSelectedCount} items selected</span>
@@ -284,7 +283,7 @@ export default function SummaryPanel({
           ✕
         </button>
         <p className="summary-eyebrow">Order Summary</p>
-        <h2>Your Celebration</h2>
+        <h2>{guestName ? `${guestName}'s Celebration` : "Your Celebration"}</h2>
         <p className="summary-tier">
           {tierInfo.name} Package &middot; {tierInfo.subtitle}
         </p>
