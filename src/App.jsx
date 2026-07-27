@@ -17,6 +17,7 @@ const FALSE_BY_TIER = { 1: false, 2: false, 3: false };
 export default function App() {
   const [tier, setTier] = useState(1);
   const [guestName, setGuestName] = useState("");
+  const [cartOpen, setCartOpen] = useState(false);
   // selectionsByTier: { [tier]: { [categoryId]: string[] } } - kept separately per
   // tier so switching packages never discards a guest's previous choices.
   const [selectionsByTier, setSelectionsByTier] = useState(EMPTY_BY_TIER);
@@ -130,16 +131,14 @@ export default function App() {
   return (
     <div className="app-shell">
       <nav className="top-nav">
-        <span className="brand-mark">The Wedding Feast</span>
-        <span className="nav-note">Live Menu Planner</span>
+        <span className="brand-mark">Taste the Rhythm</span>
+        <span className="nav-note">Rhythm Lonavala &middot; Live Menu Planner</span>
       </nav>
 
       <header className="app-header">
-        <p className="eyebrow">Custom Menu Builder</p>
-        <h1>Design Your Wedding Feast</h1>
+        <h1>Dance, Dine & Say I Do at Rhythm Lonavala</h1>
         <p className="subtitle">
-          Pick a package, play with every station, and build a feast your
-          guests will still be talking about at the next wedding.
+          Swipe, tap, build your dream menu. No boring buffets allowed.
         </p>
         <div className="guest-name-field">
           <label htmlFor="guestName">Couple / Host Name</label>
@@ -238,8 +237,25 @@ export default function App() {
           foodTruck={foodTruck}
           totalSelectedCount={totalSelectedCount}
           onReset={resetAll}
+          isMobileOpen={cartOpen}
+          onCloseMobile={() => setCartOpen(false)}
         />
       </main>
+
+      <button
+        type="button"
+        className="cart-bar"
+        onClick={() => setCartOpen(true)}
+        aria-label="View order summary"
+      >
+        <span className="cart-bar-count">
+          <span className="cart-bar-badge">{totalSelectedCount}</span>
+          <span className="cart-bar-label">
+            {totalSelectedCount === 0 ? "Your selections" : "items selected"}
+          </span>
+        </span>
+        <span className="cart-bar-action">View Summary ›</span>
+      </button>
     </div>
   );
 }

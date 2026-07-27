@@ -201,7 +201,7 @@ function buildSummaryHtml({
 </head>
 <body>
   <header>
-    <p class="brand">The Wedding Feast</p>
+    <p class="brand">Taste the Rhythm</p>
     <h1>Wedding Menu Selection</h1>
     ${guestName ? `<p class="meta"><strong>${escapeHtml(guestName)}</strong></p>` : ""}
     <p class="meta">Package: <strong>${escapeHtml(tierInfo.name)}</strong> &middot; ${escapeHtml(tierInfo.subtitle)}</p>
@@ -212,7 +212,7 @@ function buildSummaryHtml({
     ${categorySections}
     ${addonSection}
   </div>
-  <footer>Prepared with The Wedding Feast &middot; Live Menu Planner</footer>
+  <footer>Prepared with Taste the Rhythm &middot; Rhythm Lonavala</footer>
   <script>
     window.addEventListener("load", function () {
       window.print();
@@ -233,6 +233,8 @@ export default function SummaryPanel({
   foodTruck,
   totalSelectedCount,
   onReset,
+  isMobileOpen,
+  onCloseMobile,
 }) {
   const tierInfo = tiers.find((t) => t.id === tier);
 
@@ -262,8 +264,25 @@ export default function SummaryPanel({
   };
 
   return (
-    <aside className="summary-panel">
+    <aside className={`summary-panel ${isMobileOpen ? "mobile-open" : ""}`}>
+      {isMobileOpen && (
+        <button
+          type="button"
+          className="summary-backdrop"
+          aria-label="Close order summary"
+          onClick={onCloseMobile}
+        />
+      )}
       <div className="summary-sticky">
+        <span className="summary-sheet-handle" aria-hidden="true" />
+        <button
+          type="button"
+          className="summary-close"
+          onClick={onCloseMobile}
+          aria-label="Close order summary"
+        >
+          ✕
+        </button>
         <p className="summary-eyebrow">Order Summary</p>
         <h2>Your Celebration</h2>
         <p className="summary-tier">
