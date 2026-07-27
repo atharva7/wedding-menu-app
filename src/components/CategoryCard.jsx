@@ -8,6 +8,27 @@ function vegClass(item) {
   return "";
 }
 
+function matchesDiet(item, dietFilter) {
+  if (dietFilter === "veg") return item.veg === true;
+  if (dietFilter === "nonveg") return item.veg === false;
+  return true;
+}
+
+function matchesSearch(item, searchQuery) {
+  if (!searchQuery) return false;
+  return item.name.toLowerCase().includes(searchQuery);
+}
+
+function isItemAtLimit({ item, category, tier, hasVegSplit, veg, nonVeg, isSelected, selectedIds }) {
+  if (hasVegSplit) {
+    if (item.veg && category.vegMax) return veg >= category.vegMax[tier] && !isSelected;
+    if (!item.veg && category.nonVegMax) return nonVeg >= category.nonVegMax[tier] && !isSelected;
+    return false;
+  }
+  if (category.max) return selectedIds.length >= category.max[tier] && !isSelected;
+  return false;
+}
+
 function countVeg(items, selectedIds) {
   const map = Object.fromEntries(items.map((i) => [i.id, i]));
   let veg = 0;
@@ -27,12 +48,15 @@ function SubStationPicker({
   onToggleSub,
   onToggleBread,
   tier,
+  dietFilter = "all",
+  searchQuery = "",
 }) {
   const subDef = subCategories[subDefKey];
   const subKey = `${parentItemId}::${subDefKey}`;
   const selected = subSelections[subKey] || [];
   const limit = subDef.max ? subDef.max[tier] : null;
   const isUnlimited = limit == null;
+  const visibleItems = subDef.items.filter((item) => matchesDiet(item, dietFilter));
 
   return (
     <div className="sub-station">
@@ -43,13 +67,15 @@ function SubStationPicker({
         </span>
       </div>
       <div className="chip-grid">
-        {subDef.items.map((item) => {
+        {visibleItems.map((item) => {
           const isSelected = selected.includes(item.id);
           const atLimit = !isUnlimited && selected.length >= limit && !isSelected;
           return (
             <button
               key={item.id}
-              className={`item-chip small ${isSelected ? "selected" : ""} ${vegClass(item)}`}
+              className={`item-chip small ${isSelected ? "selected" : ""} ${vegClass(item)} ${
+                matchesSearch(item, searchQuery) ? "search-match" : ""
+              }`}
               disabled={atLimit}
               onClick={() => onToggleSub(subKey, subDefKey, item.id)}
             >
@@ -106,6 +132,9 @@ export default function CategoryCard({
   subSelections,
   onToggleSub,
   onToggleBread,
+  dietFilter = "all",
+  searchQuery = "",
+  forceExpanded = false,
 }) {
   const locked =
     (category.availableFrom && tier < category.availableFrom) ||
@@ -130,6 +159,8 @@ export default function CategoryCard({
 
   const [expanded, setExpanded] = useState(false);
   const toggleExpanded = () => setExpanded(!expanded);
+  const isExpanded = expanded || forceExpanded;
+  const visibleItems = category.items.filter((item) => matchesDiet(item, dietFilter));
 
   return (
     <div
@@ -139,7 +170,7 @@ export default function CategoryCard({
       <button
         type="button"
         className="category-header"
-        aria-expanded={expanded}
+        aria-expanded={isExpanded}
         onClick={toggleExpanded}
       >
         <div className="category-heading">
@@ -150,7 +181,7 @@ export default function CategoryCard({
           <span className={`status-pill ${locked ? "status-locked" : ""}`}>
             {limitText}
           </span>
-          <span className={`chevron ${expanded ? "open" : ""}`} aria-hidden="true">
+          <span className={`chevron ${isExpanded ? "open" : ""}`} aria-hidden="true">
             <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
               <path
                 d="M3.5 6L8 10.5L12.5 6"
@@ -164,27 +195,25 @@ export default function CategoryCard({
         </div>
       </button>
 
-      {expanded && (
+      {isExpanded && (
         <div className="chip-grid category-items">
-          {category.items.map((item) => {
+          {visibleItems.length === 0 && (
+            <p className="empty-filter-note">No dishes match this filter.</p>
+          )}
+          {visibleItems.map((item) => {
             const itemLocked =
               locked || Boolean(item.availableFrom && tier < item.availableFrom);
             const isSelected = !itemLocked && selectedIds.includes(item.id);
-            let atLimit = false;
-            if (!itemLocked && hasVegSplit) {
-              if (item.veg && category.vegMax) atLimit = veg >= category.vegMax[tier] && !isSelected;
-              if (!item.veg && category.nonVegMax)
-                atLimit = nonVeg >= category.nonVegMax[tier] && !isSelected;
-            } else if (!itemLocked && category.max) {
-              atLimit = selectedIds.length >= category.max[tier] && !isSelected;
-            }
+            const atLimit =
+              !itemLocked &&
+              isItemAtLimit({ item, category, tier, hasVegSplit, veg, nonVeg, isSelected, selectedIds });
 
             return (
               <div key={item.id} className="chip-with-sub">
                 <button
                   className={`item-chip ${isSelected ? "selected" : ""} ${
                     itemLocked ? "item-locked" : ""
-                  } ${vegClass(item)}`}
+                  } ${vegClass(item)} ${matchesSearch(item, searchQuery) ? "search-match" : ""}`}
                   disabled={itemLocked || atLimit}
                   onClick={() => onToggle(item.id)}
                 >
@@ -205,6 +234,8 @@ export default function CategoryCard({
                     onToggleSub={onToggleSub}
                     onToggleBread={onToggleBread}
                     tier={tier}
+                    dietFilter={dietFilter}
+                    searchQuery={searchQuery}
                   />
                 )}
               </div>

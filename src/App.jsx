@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   TIERS,
   CATEGORIES,
@@ -13,22 +13,107 @@ import "./App.css";
 
 const EMPTY_BY_TIER = { 1: {}, 2: {}, 3: {} };
 const FALSE_BY_TIER = { 1: false, 2: false, 3: false };
+const STORAGE_KEY = "tasteTheRhythm.menuState.v1";
+
+function encodeState(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCodePoint(byte);
+  });
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+
+function decodeState(encoded) {
+  const base64 = encoded.replaceAll("-", "+").replaceAll("_", "/");
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, (char) => char.codePointAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function readSharedState() {
+  const params = new URLSearchParams(window.location.search);
+  const shared = params.get("share");
+  if (!shared) return null;
+  try {
+    const data = decodeState(shared);
+    params.delete("share");
+    const query = params.toString();
+    const newUrl =
+      window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
+    window.history.replaceState({}, "", newUrl);
+    return data;
+  } catch {
+    // Malformed or tampered share link - ignore and fall back to stored state.
+    return null;
+  }
+}
+
+function readStoredState() {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    // Storage unavailable (private browsing, quota, etc.) - start fresh.
+    return null;
+  }
+}
+
+const initialState =
+  typeof window !== "undefined" ? readSharedState() ?? readStoredState() : null;
 
 export default function App() {
-  const [tier, setTier] = useState(1);
-  const [guestName, setGuestName] = useState("");
+  const [tier, setTier] = useState(initialState?.tier ?? 1);
+  const [guestName, setGuestName] = useState(initialState?.guestName ?? "");
   const [cartOpen, setCartOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dietFilter, setDietFilter] = useState("all");
+  const [showSelectedOnly, setShowSelectedOnly] = useState(false);
   // selectionsByTier: { [tier]: { [categoryId]: string[] } } - kept separately per
   // tier so switching packages never discards a guest's previous choices.
-  const [selectionsByTier, setSelectionsByTier] = useState(EMPTY_BY_TIER);
+  const [selectionsByTier, setSelectionsByTier] = useState(
+    initialState?.selectionsByTier ?? EMPTY_BY_TIER
+  );
   // subSelectionsByTier: { [tier]: { [subCategoryKey]: string[] } } where
   // subCategoryKey = `${parentItemId}::${subId}`
-  const [subSelectionsByTier, setSubSelectionsByTier] = useState(EMPTY_BY_TIER);
-  const [foodTruckByTier, setFoodTruckByTier] = useState(FALSE_BY_TIER);
+  const [subSelectionsByTier, setSubSelectionsByTier] = useState(
+    initialState?.subSelectionsByTier ?? EMPTY_BY_TIER
+  );
+  const [foodTruckByTier, setFoodTruckByTier] = useState(
+    initialState?.foodTruckByTier ?? FALSE_BY_TIER
+  );
 
   const selections = selectionsByTier[tier];
   const subSelections = subSelectionsByTier[tier];
   const foodTruck = foodTruckByTier[tier];
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          tier,
+          guestName,
+          selectionsByTier,
+          subSelectionsByTier,
+          foodTruckByTier,
+        })
+      );
+    } catch {
+      // Ignore storage errors (quota exceeded, private browsing, etc.)
+    }
+  }, [tier, guestName, selectionsByTier, subSelectionsByTier, foodTruckByTier]);
+
+  const buildShareUrl = useCallback(() => {
+    const encoded = encodeState({
+      tier,
+      guestName,
+      selectionsByTier,
+      subSelectionsByTier,
+      foodTruckByTier,
+    });
+    return `${window.location.origin}${window.location.pathname}?share=${encoded}`;
+  }, [tier, guestName, selectionsByTier, subSelectionsByTier, foodTruckByTier]);
 
   const toggleItem = useCallback(
     (categoryId, itemId) => {
@@ -128,6 +213,37 @@ export default function App() {
     setFoodTruckByTier(FALSE_BY_TIER);
   };
 
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const categoryMatchesSearch = useCallback(
+    (cat) => {
+      if (!normalizedQuery) return true;
+      if (cat.items.some((item) => item.name.toLowerCase().includes(normalizedQuery))) {
+        return true;
+      }
+      return cat.items.some((item) => {
+        if (!item.sub) return false;
+        const subDef = SUB_CATEGORIES[item.sub];
+        const subMatch = subDef.items.some((i) =>
+          i.name.toLowerCase().includes(normalizedQuery)
+        );
+        const breadMatch = subDef.breads?.some((b) =>
+          b.name.toLowerCase().includes(normalizedQuery)
+        );
+        return subMatch || breadMatch;
+      });
+    },
+    [normalizedQuery]
+  );
+
+  const visibleCategories = useMemo(() => {
+    return CATEGORIES.filter((cat) => {
+      if (!categoryMatchesSearch(cat)) return false;
+      if (showSelectedOnly && (selections[cat.id] || []).length === 0) return false;
+      return true;
+    });
+  }, [categoryMatchesSearch, showSelectedOnly, selections]);
+
   return (
     <div className="app-shell">
       <nav className="top-nav">
@@ -173,12 +289,73 @@ export default function App() {
       <main className="menu-layout">
         <p className="section-label">Choose Your Stations & Dishes</p>
 
+        <div className="menu-toolbar">
+          <div className="toolbar-search">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+              <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.6" />
+              <path
+                d="M10.5 10.5L14 14"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search dishes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search dishes"
+            />
+          </div>
+
+          <div className="diet-filter" aria-label="Filter by diet">
+            <button
+              type="button"
+              className={dietFilter === "all" ? "active" : ""}
+              onClick={() => setDietFilter("all")}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              className={dietFilter === "veg" ? "active" : ""}
+              onClick={() => setDietFilter("veg")}
+            >
+              <span className="veg-symbol veg" aria-hidden="true" />
+              <span>Veg Only</span>
+            </button>
+            <button
+              type="button"
+              className={dietFilter === "nonveg" ? "active" : ""}
+              onClick={() => setDietFilter("nonveg")}
+            >
+              <span className="veg-symbol non-veg" aria-hidden="true" />
+              <span>Non-Veg</span>
+            </button>
+          </div>
+
+          <label className="selected-only-toggle">
+            <input
+              type="checkbox"
+              checked={showSelectedOnly}
+              onChange={(e) => setShowSelectedOnly(e.target.checked)}
+            />
+            <span>Show selected only</span>
+          </label>
+        </div>
+
         <div className="categories-column">
           <div className="category-grid">
-            {CATEGORIES.map((cat, idx) => (
+            {visibleCategories.length === 0 && (
+              <p className="no-results">
+                No dishes match your search or filters. Try clearing them.
+              </p>
+            )}
+            {visibleCategories.map((cat) => (
               <CategoryCard
                 key={cat.id}
-                index={idx + 1}
+                index={CATEGORIES.indexOf(cat) + 1}
                 category={cat}
                 tier={tier}
                 selectedIds={selections[cat.id] || []}
@@ -187,6 +364,9 @@ export default function App() {
                 subSelections={subSelections}
                 onToggleSub={toggleSubItem}
                 onToggleBread={toggleBread}
+                dietFilter={dietFilter}
+                searchQuery={normalizedQuery}
+                forceExpanded={Boolean(normalizedQuery)}
               />
             ))}
 
@@ -239,6 +419,7 @@ export default function App() {
           onReset={resetAll}
           isMobileOpen={cartOpen}
           onCloseMobile={() => setCartOpen(false)}
+          getShareUrl={buildShareUrl}
         />
       </main>
 

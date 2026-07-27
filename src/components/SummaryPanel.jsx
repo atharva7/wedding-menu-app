@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -234,8 +236,21 @@ export default function SummaryPanel({
   onReset,
   isMobileOpen,
   onCloseMobile,
+  getShareUrl,
 }) {
   const tierInfo = tiers.find((t) => t.id === tier);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleCopyLink = async () => {
+    const url = getShareUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      window.alert("Couldn't copy the link automatically. Here it is:\n\n" + url);
+    }
+  };
 
   const handleDownload = () => {
     const html = buildSummaryHtml({
@@ -352,6 +367,9 @@ export default function SummaryPanel({
           </button>
           <button className="btn-secondary" onClick={() => window.print()}>
             Print
+          </button>
+          <button className="btn-secondary" onClick={handleCopyLink}>
+            {linkCopied ? "Link Copied!" : "Copy Share Link"}
           </button>
           <button className="btn-ghost" onClick={onReset}>
             Reset All

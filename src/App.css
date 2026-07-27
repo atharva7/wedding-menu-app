@@ -394,6 +394,147 @@
   }
 }
 
+/* Menu Toolbar (search, diet filter, selected-only toggle) */
+.menu-toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: -8px 0 22px;
+}
+
+.toolbar-search {
+  position: relative;
+  flex: 1 1 220px;
+  max-width: 320px;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+}
+
+.toolbar-search svg {
+  position: absolute;
+  left: 12px;
+  pointer-events: none;
+}
+
+.toolbar-search input {
+  width: 100%;
+  padding: 10px 14px 10px 34px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.toolbar-search input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.diet-filter {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.diet-filter button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--charcoal);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.diet-filter button:hover {
+  border-color: var(--gold);
+}
+
+.diet-filter button.active {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: var(--paper);
+}
+
+.diet-filter button.active .veg-symbol {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.selected-only-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--charcoal);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.selected-only-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--emerald);
+  cursor: pointer;
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 40px 20px;
+  background: var(--stone);
+  border-radius: 14px;
+}
+
+.empty-filter-note {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-style: italic;
+  margin: 4px 0 0;
+}
+
+.item-chip.search-match {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+@media (max-width: 640px) {
+  .menu-toolbar {
+    margin: -4px 0 14px;
+    gap: 10px;
+  }
+
+  .toolbar-search {
+    flex: 1 1 100%;
+    max-width: none;
+    order: 1;
+  }
+
+  .diet-filter {
+    order: 2;
+  }
+
+  .selected-only-toggle {
+    order: 3;
+    margin-left: 0;
+  }
+}
+
 /* Category Card */
 .category-card {
   background: var(--paper);
