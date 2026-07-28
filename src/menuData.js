@@ -47,6 +47,7 @@ export const CATEGORIES = [
     id: "liveCounters",
     title: "Live Interactive Counters",
     emoji: "🔥",
+    featured: true,
     max: t(2, 4, 6),
     items: [
       { id: "chaatCorner", name: "Chaat Corner - Build Your Own", veg: true },
@@ -61,6 +62,7 @@ export const CATEGORIES = [
     id: "cocktailFingerFood",
     title: "Cocktail Hour Finger Food",
     emoji: "📸",
+    featured: true,
     max: t(15, 25, 35),
     vegMax: t(10, 15, 20),
     nonVegMax: t(5, 10, 15),

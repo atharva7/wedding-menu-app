@@ -45,9 +45,13 @@ function buildCategoryHtml(cat, selections, subCategories, subSelections) {
     .map((item) => buildItemHtml(item, subCategories, subSelections))
     .join("");
 
+  const featuredLabel = cat.featured
+    ? `<span class="featured-label">★ Guest Favorite</span>`
+    : "";
+
   return `
         <section class="category">
-          <h3>${escapeHtml(cat.title)}</h3>
+          <h3>${escapeHtml(cat.title)}${featuredLabel}</h3>
           <ul class="item-list">${items}</ul>
         </section>`;
 }
@@ -151,6 +155,15 @@ function buildSummaryHtml({
     padding: 6px 10px;
     border-radius: 5px;
     margin: 0 0 8px;
+  }
+  .category h3 .featured-label {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #ad8a3f;
+    margin-left: 8px;
   }
   .item-list {
     list-style: none;
@@ -310,7 +323,10 @@ export default function SummaryPanel({
             if (ids.length === 0) return null;
             return (
               <div key={cat.id} className="summary-category">
-                <h4>{cat.title}</h4>
+                <h4>
+                  {cat.title}
+                  {cat.featured && <span className="summary-featured-label">★ Guest Favorite</span>}
+                </h4>
                 <ul>
                   {ids.map((id) => {
                     const item = cat.items.find((i) => i.id === id);

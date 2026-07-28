@@ -164,9 +164,10 @@ export default function CategoryCard({
 
   return (
     <div
-      className={`category-card ${locked ? "locked" : ""}`}
+      className={`category-card ${locked ? "locked" : ""} ${category.featured ? "featured" : ""}`}
       style={{ animationDelay: `${Math.min((index - 1) * 45, 450)}ms` }}
     >
+      {category.featured && <span className="featured-tag">★ Guest Favorite</span>}
       <button
         type="button"
         className="category-header"

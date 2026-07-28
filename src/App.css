@@ -570,6 +570,26 @@
   border-style: dashed;
 }
 
+.category-card.featured {
+  border-color: var(--gold);
+  box-shadow: 0 2px 16px rgba(173, 138, 63, 0.16);
+}
+
+.category-card.featured:hover {
+  border-color: var(--gold);
+  box-shadow: 0 10px 24px rgba(173, 138, 63, 0.22);
+}
+
+.featured-tag {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
 @media (max-width: 640px) {
   .category-card {
     padding: 14px 16px;
@@ -987,6 +1007,16 @@
   margin: 0 0 8px;
   padding: 6px 10px;
   border-radius: 5px;
+}
+
+.summary-featured-label {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin-left: 8px;
 }
 
 .summary-category ul {
