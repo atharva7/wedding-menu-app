@@ -4,7 +4,9 @@ export default function TierSelector({ tiers, selectedTier, onSelect }) {
       {tiers.map((t) => (
         <button
           key={t.id}
-          className={`tier-card ${selectedTier === t.id ? "active" : ""}`}
+          className={`tier-card ${selectedTier === t.id ? "active" : ""} ${
+            t.recommended ? "recommended" : ""
+          }`}
           onClick={() => onSelect(t.id)}
         >
           {t.recommended && <span className="tier-badge">Recommended</span>}

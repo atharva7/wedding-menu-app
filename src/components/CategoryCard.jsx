@@ -73,15 +73,19 @@ function SubStationPicker({
           return (
             <button
               key={item.id}
+              type="button"
               className={`item-chip small ${isSelected ? "selected" : ""} ${vegClass(item)} ${
                 matchesSearch(item, searchQuery) ? "search-match" : ""
               }`}
               disabled={atLimit}
+              aria-pressed={isSelected}
               onClick={() => onToggleSub(subKey, subDefKey, item.id)}
             >
-              {item.veg === true && <span className="veg-symbol veg" aria-label="Veg" />}
-              {item.veg === false && <span className="veg-symbol non-veg" aria-label="Non-Veg" />}
-              {item.name}
+              <span className="item-name">
+                {item.veg === true && <span className="veg-symbol veg" aria-label="Veg" />}
+                {item.veg === false && <span className="veg-symbol non-veg" aria-label="Non-Veg" />}
+                {item.name}
+              </span>
             </button>
           );
         })}
@@ -107,8 +111,10 @@ function SubStationPicker({
               return (
                 <button
                   key={bread.id}
+                  type="button"
                   className={`item-chip small ${breadSelected ? "selected" : ""}`}
                   disabled={breadAtLimit}
+                  aria-pressed={breadSelected}
                   onClick={() => onToggleBread(subKey, bread.id)}
                 >
                   {bread.name}
@@ -168,7 +174,6 @@ export default function CategoryCard({
       className={`category-card ${locked ? "locked" : ""} ${category.featured ? "featured" : ""}`}
       style={{ animationDelay: `${Math.min((index - 1) * 45, 450)}ms` }}
     >
-      {category.featured && <span className="featured-tag">★ Guest Favorite</span>}
       <button
         type="button"
         className="category-header"
@@ -177,7 +182,11 @@ export default function CategoryCard({
       >
         <div className="category-heading">
           <span className="category-index">{index}</span>
-          <h3>{category.title}</h3>
+          <div className="category-title-group">
+            <h3>{category.title}</h3>
+            {category.note && <span className="category-note">{category.note}</span>}
+            {category.featured && <span className="featured-tag">★ Guest Favorite</span>}
+          </div>
         </div>
         <div className="category-header-right">
           <span className={`status-pill ${locked ? "status-locked" : ""}`}>
@@ -214,15 +223,19 @@ export default function CategoryCard({
               <div key={item.id} className="chip-with-sub">
                 <div className="chip-row">
                   <button
+                    type="button"
                     className={`item-chip ${isSelected ? "selected" : ""} ${
                       itemLocked ? "item-locked" : ""
                     } ${vegClass(item)} ${matchesSearch(item, searchQuery) ? "search-match" : ""}`}
                     disabled={itemLocked || atLimit}
+                    aria-pressed={isSelected}
                     onClick={() => onToggle(item.id)}
                   >
-                    {item.veg === true && <span className="veg-symbol veg" aria-label="Veg" />}
-                    {item.veg === false && <span className="veg-symbol non-veg" aria-label="Non-Veg" />}
-                    {item.name}
+                    <span className="item-name">
+                      {item.veg === true && <span className="veg-symbol veg" aria-label="Veg" />}
+                      {item.veg === false && <span className="veg-symbol non-veg" aria-label="Non-Veg" />}
+                      {item.name}
+                    </span>
                     {itemLocked && !locked && (
                       <span className="lock-tag">{TIER_NAMES[item.availableFrom]}+</span>
                     )}

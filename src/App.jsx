@@ -208,6 +208,10 @@ export default function App() {
   const tierHighlights = useMemo(() => getTierHighlights(tier), [tier]);
 
   const resetAll = () => {
+    const confirmed = window.confirm(
+      "Reset all your selections across every package? This can't be undone."
+    );
+    if (!confirmed) return;
     setSelectionsByTier(EMPTY_BY_TIER);
     setSubSelectionsByTier(EMPTY_BY_TIER);
     setFoodTruckByTier(FALSE_BY_TIER);
@@ -313,6 +317,7 @@ export default function App() {
             <button
               type="button"
               className={dietFilter === "all" ? "active" : ""}
+              aria-pressed={dietFilter === "all"}
               onClick={() => setDietFilter("all")}
             >
               All
@@ -320,6 +325,7 @@ export default function App() {
             <button
               type="button"
               className={dietFilter === "veg" ? "active" : ""}
+              aria-pressed={dietFilter === "veg"}
               onClick={() => setDietFilter("veg")}
             >
               <span className="veg-symbol veg" aria-hidden="true" />
@@ -328,6 +334,7 @@ export default function App() {
             <button
               type="button"
               className={dietFilter === "nonveg" ? "active" : ""}
+              aria-pressed={dietFilter === "nonveg"}
               onClick={() => setDietFilter("nonveg")}
             >
               <span className="veg-symbol non-veg" aria-hidden="true" />
@@ -392,15 +399,17 @@ export default function App() {
                 </span>
               </div>
               <button
+                type="button"
                 className={`item-chip ${foodTruck ? "selected" : ""} ${
                   tier < FOOD_TRUCK_ADDON.availableFrom ? "item-locked" : ""
                 }`}
                 disabled={tier < FOOD_TRUCK_ADDON.availableFrom}
+                aria-pressed={foodTruck}
                 onClick={() =>
                   setFoodTruckByTier((prev) => ({ ...prev, [tier]: !foodTruck }))
                 }
               >
-                {foodTruck ? "✓ Food Truck Added" : "+ Add Food Truck"}
+                {foodTruck ? "Food Truck Added" : "Add Food Truck"}
               </button>
             </div>
           </div>

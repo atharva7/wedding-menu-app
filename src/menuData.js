@@ -216,7 +216,8 @@ export const CATEGORIES = [
   },
   {
     id: "midnightSnacks",
-    title: "Midnight Snacks (Chai & Coffee Bar Always Included)",
+    title: "Midnight Snacks",
+    note: "Chai & coffee bar always included",
     emoji: "🌙",
     max: t(2, 4, 4),
     items: [
