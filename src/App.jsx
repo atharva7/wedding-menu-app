@@ -276,13 +276,13 @@ export default function App() {
         </span>
         <span className="tier-overview-divider" aria-hidden="true" />
         <span className="tier-overview-item">
-          Up to <strong>{tierHighlights.totalSlots}</strong> dish selections
+          Up to <strong>{tierHighlights.totalSlots}</strong> dish selections.
         </span>
         <span className="tier-overview-divider" aria-hidden="true" />
         <span className="tier-overview-item">
-          {tier === 1 && "Candy & Mithai Bar and Food Truck unlock in higher packages"}
-          {tier === 2 && "Food Truck add-on unlocks with the Grand package"}
-          {tier === 3 && "Everything is unlocked, including the Food Truck"}
+          {tier === 1 && "Candy & Mithai Bar and Food Truck unlock in higher packages."}
+          {tier === 2 && "Food Truck add-on unlocks with the Grand package."}
+          {tier === 3 && "Everything is unlocked, including the Food Truck."}
         </span>
       </div>
 
