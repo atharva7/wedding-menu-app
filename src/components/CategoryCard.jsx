@@ -158,6 +158,7 @@ export default function CategoryCard({
   }
 
   const [expanded, setExpanded] = useState(false);
+  const [openNoteId, setOpenNoteId] = useState(null);
   const toggleExpanded = () => setExpanded(!expanded);
   const isExpanded = expanded || forceExpanded;
   const visibleItems = category.items.filter((item) => matchesDiet(item, dietFilter));
@@ -211,20 +212,63 @@ export default function CategoryCard({
 
             return (
               <div key={item.id} className="chip-with-sub">
-                <button
-                  className={`item-chip ${isSelected ? "selected" : ""} ${
-                    itemLocked ? "item-locked" : ""
-                  } ${vegClass(item)} ${matchesSearch(item, searchQuery) ? "search-match" : ""}`}
-                  disabled={itemLocked || atLimit}
-                  onClick={() => onToggle(item.id)}
-                >
-                  {item.veg === true && <span className="veg-symbol veg" aria-label="Veg" />}
-                  {item.veg === false && <span className="veg-symbol non-veg" aria-label="Non-Veg" />}
-                  {item.name}
-                  {itemLocked && !locked && (
-                    <span className="lock-tag">{TIER_NAMES[item.availableFrom]}+</span>
+                <div className="chip-row">
+                  <button
+                    className={`item-chip ${isSelected ? "selected" : ""} ${
+                      itemLocked ? "item-locked" : ""
+                    } ${vegClass(item)} ${matchesSearch(item, searchQuery) ? "search-match" : ""}`}
+                    disabled={itemLocked || atLimit}
+                    onClick={() => onToggle(item.id)}
+                  >
+                    {item.veg === true && <span className="veg-symbol veg" aria-label="Veg" />}
+                    {item.veg === false && <span className="veg-symbol non-veg" aria-label="Non-Veg" />}
+                    {item.name}
+                    {itemLocked && !locked && (
+                      <span className="lock-tag">{TIER_NAMES[item.availableFrom]}+</span>
+                    )}
+                  </button>
+
+                  {item.note && (
+                    <button
+                      type="button"
+                      className={`note-toggle ${openNoteId === item.id ? "open" : ""}`}
+                      aria-label={`View chef's note for ${item.name}`}
+                      aria-expanded={openNoteId === item.id}
+                      onClick={() =>
+                        setOpenNoteId(openNoteId === item.id ? null : item.id)
+                      }
+                    >
+                      i
+                    </button>
                   )}
-                </button>
+                </div>
+
+                {openNoteId === item.id && item.note && (
+                  <div className="tasting-note">
+                    <div className="tasting-note-head">
+                      <span className="tasting-note-name">{item.name}</span>
+                      {item.spice != null && (
+                        <span
+                          className="spice-dots"
+                          aria-label={`Spice level ${item.spice} of 3`}
+                        >
+                          {[1, 2, 3].map((n) => (
+                            <span
+                              key={n}
+                              className={`spice-dot ${n <= item.spice ? "filled" : ""}`}
+                            />
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                    <p className="tasting-note-text">{item.note}</p>
+                    {item.pairsWith && (
+                      <p className="tasting-note-tip">
+                        <strong>Chef&apos;s tip:</strong> pairs beautifully with {item.pairsWith}.
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {item.sub && isSelected && (
                   <SubStationPicker
