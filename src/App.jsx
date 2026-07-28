@@ -272,7 +272,7 @@ export default function App() {
 
       <div className="tier-overview">
         <span className="tier-overview-item">
-          <strong>{tierHighlights.unlocked}</strong> of {tierHighlights.total} stations included
+          <strong>{tierHighlights.unlocked}</strong> of {tierHighlights.total} stations included.
         </span>
         <span className="tier-overview-divider" aria-hidden="true" />
         <span className="tier-overview-item">
